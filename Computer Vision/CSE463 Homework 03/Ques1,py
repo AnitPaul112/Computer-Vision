@@ -1,0 +1,73 @@
+import cv2
+import numpy as np
+
+image_path = r"D:\CSE463 Homework 03\Pepperoni Pizza.jpg"  
+output_path = r"D:\CSE463 Homework 03\Pizza_Harris_Output.jpg"  
+image = cv2.imread(image_path)
+
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+dst = cv2.cornerHarris(np.float32(gray), 2, 3, 0.04)
+
+
+dst = cv2.dilate(dst, None)
+
+
+threshold = 0.1 * dst.max()
+corner_image = np.copy(image)
+corner_image[dst > threshold] = [255,0,0]  # Highlight corners in blue as bgr.
+
+
+cv2.imwrite(output_path, corner_image)
+
+
+
+
+#Comparison with a slice of cake
+
+
+image_path1 = r"D:\CSE463 Homework 03\Slice of cake.jpg"
+output_path1 = r"D:\CSE463 Homework 03\Cake_Harris_Output.jpg"
+image1 = cv2.imread(image_path1)
+gray1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+
+
+dst = cv2.cornerHarris(np.float32(gray1), 2, 3, 0.04)
+dst = cv2.dilate(dst, None)
+
+
+threshold = 0.1 * dst.max()
+
+
+corner_image1 = np.copy(image1)  
+corner_image1[dst > threshold] = [255, 0, 0]  
+
+cv2.imwrite(output_path1, corner_image1)  
+
+
+
+
+
+height = min(corner_image.shape[0], corner_image1.shape[0])  # Find the smaller height
+corner_image = cv2.resize(corner_image, (int(corner_image.shape[1] * height / corner_image.shape[0]), height))
+corner_image1 = cv2.resize(corner_image1, (int(corner_image1.shape[1] * height / corner_image1.shape[0]), height))
+
+# Now stack the images horizontally
+comparison_image = np.hstack((corner_image, corner_image1))
+
+cv2.imwrite(r"D:\CSE463 Homework 03\Comparison_Harris_Output.jpg", comparison_image)
+
+
+
+
+
+
+
+'''
+The Harris Corner algorithm struggles with circular shapes because circles have smooth, continuous edges without sharp changes in orthogonal directions. 
+It relies on strong, abrupt intensity variations in two directions, which are absent in circular or irregular shapes.
+
+
+Harris Corner Detection is happiest with the pepperoni pizza! 
+The round pizza with pepperoni provides more distinct corners due to the sharp intensity changes around the edges of the pepperoni slices and their contrast with the pizza base. In contrast, the slice of cake has fewer distinct corners, as its surface and toppings are often smoother or lack the high contrast and sharp intensity variations needed for robust corner detection.
+
+'''
